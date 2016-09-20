@@ -35,6 +35,10 @@ public:
     void stop();
 
     void loop();
+
+    Led getLed() {
+        return led;
+    }
 };
 
 void BlinkingLed::start() {
