@@ -9,6 +9,7 @@ private:
 public:
     Led(int position) {
         this->position = position;
+        setup();
     }
 
     void setup();
