@@ -28,9 +28,6 @@ public:
     void loop() {
         button.loop();
         blinkingLed.loop();
-        vl::Func<void()> ref([this]()->void{
-            state = T_STOPPED;
-        });
         switch (state) {
             case T_STARTED:
 //                Serial.println( "T_STARTED change state ");
@@ -38,7 +35,9 @@ public:
                 state = S_STARTED;
                 break;
             case S_STARTED:
-                button.onClick(ref);
+                button.onClick([this]()->void{
+                    state = T_STOPPED;
+                });
                 break;
             case T_STOPPED:
 //                Serial.println( "T_STOPPED change state ");

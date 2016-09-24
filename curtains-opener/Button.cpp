@@ -17,7 +17,7 @@ class Button {
     int position;
     int debounceCount;
     boolean disabledState;
-    vl::Func<void()> onClickCallback;
+    Callback onClickCallback;
 
 public:
     Button(int position) : position(position) {
@@ -26,7 +26,7 @@ public:
         disabledState = digitalRead(position);
     }
 
-    void onClick(vl::Func<void()> callback) {
+    void onClick(Callback callback) {
         this->onClickCallback = callback;
     }
 
