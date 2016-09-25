@@ -4,11 +4,12 @@
 #include <Arduino.h>
 #include <FSMObject.h>
 #include <functional-vlpp.h>
+#include <Base.h>
 
 typedef vl::Func<void()> Callback;
 static const int DEBOUNCE = 20;          // ms debounce period to prevent flickering when pressing or releasing the button
 
-class Button {
+class Button : public Updatable {
     enum State {
         ENABLED,
         DISABLED
@@ -24,13 +25,14 @@ public:
         state = DISABLED;
         pinMode(position, INPUT_PULLUP);
         disabledState = digitalRead(position);
+        registerComponent(this);
     }
 
     void onClick(Callback callback) {
         this->onClickCallback = callback;
     }
 
-    void loop() {
+    void update() {
         if (disabledState != digitalRead(position)) {
             debounceCount++;
         } else {

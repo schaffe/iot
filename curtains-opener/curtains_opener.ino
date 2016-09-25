@@ -1,6 +1,9 @@
 #include <Arduino.h>
-#include <BlinkingLedButton.cpp>
+#include <LinkedList.h>
 #include <functional-vlpp.h>
+#include <Base.h>
+#include <BlinkingLedButton.cpp>
+
 
 //#include <Led.cpp>
 //#include <Button.cpp>
@@ -22,12 +25,5 @@ void setup() {
 }
 
 void loop() {
-//    button.loop();
-//
-//    if (button.read())
-//        led.on();
-//    else
-//        led.off();
-//    Serial.println("test");
-    light.loop();
+    updateAll();
 }
