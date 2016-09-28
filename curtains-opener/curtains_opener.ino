@@ -20,10 +20,12 @@ void setup() {
 
 //    btn.setup();
 //    led.setup();
-//    Serial.begin(9600);
+    Serial.begin(9600);
+    Serial.flush(); //flush all previous received and transmitted data
+    while(!Serial.available()) ;
 //    button.onClick([]() -> void {led.on();});
 }
 
 void loop() {
-    updateAll();
+    Component::updateAll();
 }

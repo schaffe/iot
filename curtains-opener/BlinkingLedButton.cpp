@@ -4,11 +4,21 @@
 #include <Base.h>
 
 enum State {
-    T_STARTED = 10,
+    T_STARTED = 0,
     S_STARTED,
     T_STOPPED,
     S_STOPPED,
+    __TOTAL
 };
+
+struct Event {
+    enum EventEnum {
+        E_BUTTON_CLICK = 0,
+        __TOTAL
+    };
+};
+
+static EventBus* eventBus = new EventBus();
 
 class ButtonFSM : public Updatable {
 
@@ -19,12 +29,22 @@ class ButtonFSM : public Updatable {
     BlinkingLed blinkingLed;
     unsigned long ts;
 
+    void changeState() {
+        if (state == S_STARTED || state == T_STARTED)
+            state = T_STOPPED;
+        else
+            state = T_STARTED;
+    }
+
 public:
     ButtonFSM() :
             state(T_STOPPED),
             button(8),
             blinkingLed(13, 100) {
-        registerComponent(this);
+        Component::registerComponent(this);
+        eventBus->subscribe(Event::E_BUTTON_CLICK, [this]() -> void {
+            changeState();
+        });
     }
 
     void update() {
@@ -34,20 +54,10 @@ public:
                 blinkingLed.start();
                 state = S_STARTED;
                 break;
-            case S_STARTED:
-                button.onClick([this]() -> void {
-                    state = T_STOPPED;
-                });
-                break;
             case T_STOPPED:
 //                Serial.println( "T_STOPPED change state ");
                 blinkingLed.stop();
                 state = S_STOPPED;
-                break;
-            case S_STOPPED:
-                button.onClick([this]() -> void {
-                    state = T_STARTED;
-                });
                 break;
         }
     }

@@ -29,7 +29,7 @@ public:
             period(period - blinkTime),
             blinkTime(blinkTime) {
         led.setup();
-        registerComponent(this);
+        Component::registerComponent(this);
     }
 
     void start();

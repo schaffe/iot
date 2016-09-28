@@ -2,7 +2,6 @@
 // Created by dzidzoiev on 9/14/16.
 //
 #include <Arduino.h>
-#include <FSMObject.h>
 #include <functional-vlpp.h>
 #include <Base.h>
 
@@ -25,7 +24,7 @@ public:
         state = DISABLED;
         pinMode(position, INPUT_PULLUP);
         disabledState = digitalRead(position);
-        registerComponent(this);
+        Component::registerComponent(this);
     }
 
     void onClick(Callback callback) {
@@ -38,8 +37,10 @@ public:
         } else {
             debounceCount = 0;
 
-            if (state == ENABLED)
+            if (state == ENABLED) {
+                Serial.println("click");
                 onClickCallback();
+            }
 
             state = DISABLED;
             return;
