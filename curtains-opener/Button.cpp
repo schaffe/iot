@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <functional-vlpp.h>
 #include <Base.h>
+#include <Event.h>
 
-typedef vl::Func<void()> Callback;
 static const int DEBOUNCE = 20;          // ms debounce period to prevent flickering when pressing or releasing the button
 
 class Button : public Updatable {
@@ -17,7 +17,6 @@ class Button : public Updatable {
     int position;
     int debounceCount;
     boolean disabledState;
-    Callback onClickCallback;
 
 public:
     Button(int position) : position(position) {
@@ -27,10 +26,6 @@ public:
         Component::registerComponent(this);
     }
 
-    void onClick(Callback callback) {
-        this->onClickCallback = callback;
-    }
-
     void update() {
         if (disabledState != digitalRead(position)) {
             debounceCount++;
@@ -38,8 +33,7 @@ public:
             debounceCount = 0;
 
             if (state == ENABLED) {
-                Serial.println("click");
-                onClickCallback();
+                eventBus->fire(0);
             }
 
             state = DISABLED;
@@ -48,7 +42,6 @@ public:
 
         if (debounceCount > DEBOUNCE) {
             state = ENABLED;
-            Serial.println("State ENABLED " + debounceCount);
         }
     }
 

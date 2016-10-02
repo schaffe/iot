@@ -4,11 +4,12 @@
 #include <LinkedList.h>
 #include <functional-vlpp.h>
 #include <Arduino.h>
+#include <Event.h>
 
 #ifndef CURTAINS_OPENER_BASE_H
 #define CURTAINS_OPENER_BASE_H
 
-typedef vl::Func<void()> Callback;
+typedef vl::Func<void(void)> Callback;
 
 template<typename T>
 class ReactiveList : public LinkedList<T> {
@@ -46,19 +47,24 @@ namespace Component {
  * Should be created as static field
  */
 class EventBus {
-    LinkedList<ReactiveList<Callback>> listenersMap;
+    Callback listenersMap[Event::__TOTAL][3];
 
 public:
+
+    EventBus(int events) {
+    }
+
     void subscribe(int event, Callback callback) {
-        listenersMap.get(event).add(callback);
+        Serial.println("Subscribe");
+        listenersMap[0][0] = callback;
+        Serial.flush();
     }
 
     void fire(int event) {
-        ReactiveList<Callback> callbacksForEvent = listenersMap.get(event);
-//        Serial.println(callbacksForEvent);
-        callbacksForEvent.forEach([](Callback callback) -> void {
-            callback();
-        });
+        listenersMap[event][0]();
     }
 };
+
+static EventBus* eventBus;
+
 #endif //CURTAINS_OPENER_BASE_H

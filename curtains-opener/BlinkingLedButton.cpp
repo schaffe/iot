@@ -2,6 +2,9 @@
 #include <Button.cpp>
 #include <BlinkingLed.cpp>
 #include <Base.h>
+#include <Event.h>
+
+typedef vl::Func<void(void)> Callback;
 
 enum State {
     T_STARTED = 0,
@@ -10,15 +13,6 @@ enum State {
     S_STOPPED,
     __TOTAL
 };
-
-struct Event {
-    enum EventEnum {
-        E_BUTTON_CLICK = 0,
-        __TOTAL
-    };
-};
-
-static EventBus* eventBus = new EventBus();
 
 class ButtonFSM : public Updatable {
 
@@ -30,6 +24,9 @@ class ButtonFSM : public Updatable {
     unsigned long ts;
 
     void changeState() {
+        Serial.print("Change state. Current state is ");
+        Serial.println(state);
+        Serial.flush();
         if (state == S_STARTED || state == T_STARTED)
             state = T_STOPPED;
         else
@@ -37,14 +34,16 @@ class ButtonFSM : public Updatable {
     }
 
 public:
+
+    void onButtonClick();
+    void setState(State s);
+
     ButtonFSM() :
             state(T_STOPPED),
             button(8),
             blinkingLed(13, 100) {
         Component::registerComponent(this);
-        eventBus->subscribe(Event::E_BUTTON_CLICK, [this]() -> void {
-            changeState();
-        });
+        eventBus->subscribe(Event::E_BUTTON_CLICK, Callback(this, &ButtonFSM::onButtonClick));
     }
 
     void update() {
@@ -62,3 +61,19 @@ public:
         }
     }
 };
+
+void ButtonFSM::onButtonClick() {
+    switch (state) {
+        case T_STARTED:
+        case S_STARTED:
+            setState(T_STOPPED);
+            break;
+        case T_STOPPED:
+        case S_STOPPED:
+            setState(T_STARTED);
+    }
+}
+
+void ButtonFSM::setState(State s) {
+    this->state = s;
+}
