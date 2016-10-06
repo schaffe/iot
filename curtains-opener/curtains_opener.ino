@@ -8,7 +8,7 @@
 //#include <Led.cpp>
 //#include <Button.cpp>
 //#include <TrafficLight.cpp>
-static ButtonFSM light;
+static ButtonFSM* light;
 //static Led led(13);
 //static Button button(8);
 //static InputPin button(8);
@@ -23,6 +23,8 @@ void setup() {
     Serial.begin(9600);
     Serial.flush(); //flush all previous received and transmitted data
     while(!Serial.available()) ;
+    eventBus = new EventBus(Event::__TOTAL);
+    light = new ButtonFSM();
 //    button.onClick([]() -> void {led.on();});
 }
 

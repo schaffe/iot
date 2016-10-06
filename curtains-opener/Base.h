@@ -65,6 +65,24 @@ public:
     }
 };
 
-static EventBus* eventBus;
+static EventBus *eventBus;
+
+class Timer : public Updatable {
+    unsigned long fireTime;
+    Callback callback;
+
+public:
+    Timer(Callback callback, unsigned long ms) :
+            fireTime(millis() + ms),
+            callback(callback) {
+        Component::registerComponent(this);
+    }
+
+    void update() {
+        if (millis() >= fireTime)
+            callback();
+        delete this;
+    }
+};
 
 #endif //CURTAINS_OPENER_BASE_H

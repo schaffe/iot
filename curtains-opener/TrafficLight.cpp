@@ -34,8 +34,8 @@ public:
             state(S_GREEN_ON) {};
 
     void loop() {
-        green.loop();
-        red.loop();
+        green.update();
+        red.update();
 
         switch (state) {
             case S_GREEN_ON:
