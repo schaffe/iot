@@ -1,9 +1,8 @@
 #include <Arduino.h>
-#include <LinkedList.h>
-#include <functional-vlpp.h>
+//#include <LinkedList.h>
+//#include <functional-vlpp.h>
 #include <Base.h>
 #include <BlinkingLedButton.cpp>
-
 
 //#include <Led.cpp>
 //#include <Button.cpp>
@@ -20,11 +19,11 @@ void setup() {
 
 //    btn.setup();
 //    led.setup();
-    Serial.begin(9600);
-    Serial.flush(); //flush all previous received and transmitted data
-    while(!Serial.available()) ;
-    eventBus = new EventBus(Event::__TOTAL);
-    light = new ButtonFSM();
+//    Serial.begin(9600);
+//    Serial.flush(); //flush all previous received and transmitted data
+//    while(!Serial.available()) ;
+//    eventBus = new EventBus(Event::__TOTAL);
+//    light = new ButtonFSM();
 //    button.onClick([]() -> void {led.on();});
 }
 

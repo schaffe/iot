@@ -21,17 +21,7 @@ class ButtonFSM : public Updatable {
     mutable State state;
     Button button;
     BlinkingLed blinkingLed;
-    unsigned long ts;
-
-    void changeState() {
-        Serial.print("Change state. Current state is ");
-        Serial.println(state);
-        Serial.flush();
-        if (state == S_STARTED || state == T_STARTED)
-            state = T_STOPPED;
-        else
-            state = T_STARTED;
-    }
+    Timer *timer;
 
 public:
 
@@ -39,7 +29,7 @@ public:
     void setState(State s);
 
     ButtonFSM() :
-            state(T_STOPPED),
+            state(T_STARTED),
             button(8),
             blinkingLed(13, 100) {
         Component::registerComponent(this);
@@ -52,6 +42,7 @@ public:
 //                Serial.println( "T_STARTED change state ");
                 blinkingLed.start();
                 state = S_STARTED;
+//                timer = new Timer(Callback(this, &ButtonFSM::onButtonClick), 2000);
                 break;
             case T_STOPPED:
 //                Serial.println( "T_STOPPED change state ");
@@ -71,9 +62,11 @@ void ButtonFSM::onButtonClick() {
         case T_STOPPED:
         case S_STOPPED:
             setState(T_STARTED);
+            break;
     }
 }
 
 void ButtonFSM::setState(State s) {
+//    delete this->timer;
     this->state = s;
 }
