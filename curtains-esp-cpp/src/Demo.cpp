@@ -10,11 +10,12 @@ LOCAL PubSubClient MQTT(client);
 LOCAL Ticker pingTimer;
 LOCAL bool pingFlag;
 
-long lastMsg = 0;
-char msg[50];
-int value = 0;
+const String NOOP("NOOP");
+LOCAL String command = NOOP;
 
-void callback(char* topic, byte* payload, unsigned int length);
+char *toString(uint8_t *msg, int len);
+
+void callback(char *topic, byte *payload, unsigned int length);
 
 void setup() {
     Serial.begin(115200);
@@ -29,28 +30,39 @@ void setup() {
 
     MQTT.setServer(MQTT_SERVER, MQTT_PORT);
     MQTT.setCallback(callback);
+
 }
 
-void callback(char* topic, uint8_t* payload, unsigned int length) {
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
+void commandStop() {
+    MQTT.publish("/room/curtains/general", "Stopping");
+}
 
-    MQTT.publish("/room/curtains/general", "echo");
-//    for (int i = 0; i < length; i++) {
-//        Serial.print((char)payload[i]);
-//    }
-//    Serial.println();
+void commandOpen() {
+    MQTT.publish("/room/curtains/general", "Opening");
+}
 
-//    // Switch on the LED if an 1 was received as first character
-//    if ((char)payload[0] == '1') {
-//        digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-//        // but actually the LED is on; this is because
-//        // it is acive low on the ESP-01)
-//    } else {
-//        digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-//    }
+void commandClose() {
+    MQTT.publish("/room/curtains/general", "Closing");
+}
 
+void commandReboot() {
+    MQTT.publish("/room/curtains/general", "Now rebooting");
+    ESP.restart();
+}
+
+void callback(char *topic, uint8_t *payload, unsigned int length) {
+    char *result = toString(payload, length);
+    command = String(result);
+    delete[] result;
+}
+
+char *toString(uint8_t *msg, int len) {
+    char *result = new char[len];
+    for (int i = 0; i < len; ++i) {
+        result[i] = (char) msg[i];
+    }
+    result[len] = '\0';
+    return result;
 }
 
 void reconnect() {
@@ -79,6 +91,25 @@ void reconnect() {
     }
 }
 
+void handleCommand() {
+    if (command == NOOP)
+        return;
+    else if (command.equals("stop"))
+        commandStop();
+    else if (command.equals("open"))
+        commandOpen();
+    else if (command.equals("close"))
+        commandClose();
+    else if (command.equals("reboot"))
+        commandReboot();
+    else if (command.equals("heap"))
+        MQTT.publish("/room/curtains/general", String(ESP.getFreeHeap()).c_str());
+    else
+        MQTT.publish("/room/curtains/general", (String("echo") += command).c_str());
+
+    command = NOOP;
+}
+
 void loop() {
 
     if (!MQTT.connected()) {
@@ -88,7 +119,9 @@ void loop() {
     if (pingFlag) {
         MQTT.publish("/room/curtains/ping", "curtains");
         pingFlag = false;
+        yield();
     }
+    handleCommand();
 
 //    long now = millis();
 //    if (now - lastMsg > 2000) {
