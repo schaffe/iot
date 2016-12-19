@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <Ticker.h>
 #include "WifiConfig.h"
+#include "CurtainsConfig.h"
 
 LOCAL WiFiClient client;
 LOCAL PubSubClient MQTT(client);
@@ -10,12 +11,21 @@ LOCAL PubSubClient MQTT(client);
 LOCAL Ticker pingTimer;
 LOCAL bool pingFlag;
 
-const String NOOP("NOOP");
+LOCAL Ticker curtainsTimer;
+LOCAL bool openIntFlag;
+LOCAL bool closeIntFlag;
+
+static const String NOOP("NOOP");
+static const char *const MAIN_TOPIC = "/room/curtains/general";
 LOCAL String command = NOOP;
 
 char *toString(uint8_t *msg, int len);
 
+void onOpen();
+
 void callback(char *topic, byte *payload, unsigned int length);
+
+void stopDrive();
 
 void setup() {
     Serial.begin(115200);
@@ -29,31 +39,71 @@ void setup() {
     Serial.println(F(" WiFi connected."));
 
     MQTT.setServer(MQTT_SERVER, MQTT_PORT);
-    MQTT.setCallback(callback);
+    MQTT.setCallback([](char *topic, uint8_t *payload, unsigned int length) -> void {
+        char *result = toString(payload, length);
+        command = String(result);
+        delete[] result;
+    });
 
+    pinMode(OPEN_PIN, INPUT_PULLUP);
+    pinMode(CLOSE_PIN, INPUT_PULLUP);
+
+    pinMode(DRIVE1_PIN, OUTPUT);
+    pinMode(DRIVE2_PIN, OUTPUT);
 }
 
 void commandStop() {
-    MQTT.publish("/room/curtains/general", "Stopping");
+    detachInterrupt(OPEN_PIN);
+    detachInterrupt(CLOSE_PIN);
+    stopDrive();
+    curtainsTimer.detach();
+    MQTT.publish(MAIN_TOPIC, "Stopped!");
+}
+
+void stopDrive() {
+    digitalWrite(DRIVE1_PIN, LOW);
+    digitalWrite(DRIVE2_PIN, LOW);
 }
 
 void commandOpen() {
-    MQTT.publish("/room/curtains/general", "Opening");
+    void (*callback)()=[]() -> void { 
+        openIntFlag = true; 
+    };
+    attachInterrupt(OPEN_PIN, callback, FALLING);
+    digitalWrite(DRIVE1_PIN, HIGH);
+    digitalWrite(DRIVE2_PIN, LOW);
+    curtainsTimer.once(OPERATION_TIMEOUT, callback);
+    MQTT.publish(MAIN_TOPIC, "Opening");
+}
+
+void onOpen() {
+    openIntFlag = false;
+    stopDrive();
+    detachInterrupt(OPEN_PIN);
+    MQTT.publish(MAIN_TOPIC, "Open!");
 }
 
 void commandClose() {
-    MQTT.publish("/room/curtains/general", "Closing");
+    void (*callback)()=[]() -> void { 
+        closeIntFlag = true; 
+    };
+    attachInterrupt(CLOSE_PIN, callback, FALLING);
+    digitalWrite(DRIVE1_PIN, LOW);
+    digitalWrite(DRIVE2_PIN, HIGH);
+    curtainsTimer.once(OPERATION_TIMEOUT, callback);
+    MQTT.publish(MAIN_TOPIC, "Closing");
+}
+
+void onClose() {
+    closeIntFlag = false;
+    stopDrive();
+    detachInterrupt(CLOSE_PIN);
+    MQTT.publish(MAIN_TOPIC, "Close!");
 }
 
 void commandReboot() {
-    MQTT.publish("/room/curtains/general", "Now rebooting");
+    MQTT.publish(MAIN_TOPIC, "Now rebooting");
     ESP.restart();
-}
-
-void callback(char *topic, uint8_t *payload, unsigned int length) {
-    char *result = toString(payload, length);
-    command = String(result);
-    delete[] result;
 }
 
 char *toString(uint8_t *msg, int len) {
@@ -73,11 +123,11 @@ void reconnect() {
         if (MQTT.connect("ESP8266Client")) {
             Serial.println("connected");
             // Once connected, publish an announcement...
-            MQTT.publish("/room/curtains/general", "Curtains just got started");
+            MQTT.publish(MAIN_TOPIC, "Curtains just got started");
             // ... and resubscribe
             MQTT.subscribe("/room/curtains/listen");
 
-            pingTimer.attach(5, []() -> void {
+            pingTimer.attach(PING_TIMEOUT, []() -> void {
                 Serial.println("Ping....");
                 pingFlag = true;
             });
@@ -103,9 +153,9 @@ void handleCommand() {
     else if (command.equals("reboot"))
         commandReboot();
     else if (command.equals("heap"))
-        MQTT.publish("/room/curtains/general", String(ESP.getFreeHeap()).c_str());
+        MQTT.publish(MAIN_TOPIC, String(ESP.getFreeHeap()).c_str());
     else
-        MQTT.publish("/room/curtains/general", (String("echo") += command).c_str());
+        MQTT.publish(MAIN_TOPIC, (String("echo") += command).c_str());
 
     command = NOOP;
 }
@@ -123,13 +173,8 @@ void loop() {
     }
     handleCommand();
 
-//    long now = millis();
-//    if (now - lastMsg > 2000) {
-//        lastMsg = now;
-//        ++value;
-//        snprintf (msg, 75, "hello world #%ld", value);
-//        Serial.print("Publish message: ");
-//        Serial.println(msg);
-//        MQTT.publish("outTopic", msg);
-//    }
+    if (openIntFlag)
+        onOpen();
+    if (closeIntFlag)
+        onClose();
 }
