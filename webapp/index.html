@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Home Control</title>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+	<div class="curtains">
+		<h2 class="curtains_title">Curtains</h2>
+		<button class="curtains_button curtains_button__open">Open</button>
+		<button class="curtains_button curtains_button__close">Close</button>
+		<button class="curtains_button curtains_button__open">Stop</button>
+	</div>
+
+	<div class="conditions">
+		<h2 class="conditions_title">Conditions</h2>
+		<span class="conditions_temperature">
+			Temperature 
+			<span class="value">21</span>
+		</span>
+		<span class="conditions_humidity">
+			Humidity
+			<span class="value">60</span>
+		</span>
+	</div>
+
+	<div class="console">
+		<div class="filters">
+			<span class="filters_item">Temperature</span>
+			<span class="filters_item">Humidity</span>
+			<span class="filters_item">Curtains</span>
+		</div>
+		<div class="history"></div>
+		<div class="command">
+			<select class="command_channel">
+				<option>/kitchen/fridge/listen</option>
+				<option>/room/curtains/listen</option>
+			</select>
+			<input type="text" class="command_text">
+		</div>
+	</div>
+
+</body>
+</html>
