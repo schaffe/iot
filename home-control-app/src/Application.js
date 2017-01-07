@@ -1,6 +1,6 @@
-import React, {Component} from 'react';
-import './App.css';
-import Console from './console/Console';
+import './Application.css';
+import Console from './components/console/Console';
+import * as React from "react";
 
 function Indicator(props) {
     return (
@@ -11,10 +11,10 @@ function Indicator(props) {
     );
 }
 
-class App extends Component {
+export default class Application extends React.Component {
     render() {
         return (
-            <div className="App">
+            <div>
                 <div className="curtains">
                     <h2 className="curtains_title">Curtains</h2>
                     <button className="curtains_button curtains_button__open">Open</button>
@@ -44,5 +44,3 @@ class App extends Component {
         );
     }
 }
-
-export default App;

@@ -2,7 +2,7 @@ import * as React from "react";
 import './Console.css';
 import LogsPanel from "./LogsPanel";
 
-class Console extends React.Component {
+export default class Console extends React.Component {
 
     constructor(props) {
         super(props);
@@ -34,4 +34,3 @@ class Console extends React.Component {
         );
     }
 }
-export default Console;
