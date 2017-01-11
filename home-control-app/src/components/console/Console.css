@@ -1,0 +1,13 @@
+.console {
+    border-top: 1px solid black;
+    /*height: 200px;*/
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+}
+
+.console .switcher {
+    border: none;
+    background: transparent;
+    outline: none;
+}

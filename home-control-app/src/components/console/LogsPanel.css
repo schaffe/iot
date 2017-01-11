@@ -1,0 +1,10 @@
+.logs-panel {
+    transition: height 500ms ease;
+    height: 200px;
+}
+
+.hide {
+    pointer-events: none;
+    height: 0;
+    overflow: hidden;
+}

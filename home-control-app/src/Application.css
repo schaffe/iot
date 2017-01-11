@@ -1,0 +1,59 @@
+
+.command {
+  width: 100%;
+  position:  absolute;
+  bottom: 0;
+  display: flex;
+}
+
+.command_channel{
+  width: 20%;
+}
+
+.command_text {
+  width: 75%;
+}
+
+.channel {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.channel_name__red {
+  background-color: red;
+}
+
+.channel_arrow__red {
+  border-left: 10px solid red;
+}
+
+.channel_name__blue {
+  background-color: #036dbb;
+}
+
+.channel_arrow__blue {
+  border-left: 10px solid #036dbb;
+}
+
+.channel_name {
+  margin-left: -15px;
+  padding-left: 15px;
+  padding-right: 5px;
+  font: caption;
+  display: inline-block;
+  color: white;
+  height: 20px;
+}
+
+.channel_arrow {
+  vertical-align: bottom;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: -4px;
+  /*	margin-top: -10px;
+      margin-right: -10px;*/
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
